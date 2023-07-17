@@ -1,15 +1,25 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame/particles.dart';
+import 'package:flutter/material.dart';
 import 'package:space_escape/game/enemy.dart';
 import 'package:space_escape/game/game.dart';
 
-class Player extends SpriteComponent with CollisionCallbacks, HasGameRef<SpaceEscapeGame> {
+class Player extends SpriteComponent
+    with CollisionCallbacks, HasGameRef<SpaceEscapeGame> {
   Vector2 _moveDirection = Vector2.zero();
   final JoystickComponent joystick;
 
   double _speed = 300;
+
+  Random _random = Random();
+
+  Vector2 getRandomVector() {
+    return (Vector2.random(_random) - Vector2(0.5, -1)) * 200;
+  }
 
   Player({
     required this.joystick,
@@ -39,7 +49,24 @@ class Player extends SpriteComponent with CollisionCallbacks, HasGameRef<SpaceEs
 
     print("Joystick direction is ====> ${joystick.direction}");
     print("Joystick drag is =====> ${joystick.isDragged}");
-    /// Joystick
+
+    final particleComponent = ParticleSystemComponent(
+      particle: Particle.generate(
+        count: 10,
+        lifespan: 0.1,
+        generator: (i) => AcceleratedParticle(
+          acceleration: getRandomVector(),
+          speed: getRandomVector(),
+          position: Vector2(size.x / 2, size.y - 10),
+          child: CircleParticle(
+            radius: 1,
+            paint: Paint()..color = Colors.white,
+          ),
+        ),
+      ),
+    );
+    add(particleComponent);
+
     switch (joystick.direction) {
       case JoystickDirection.up:
         setMoveDirection(Vector2(0, -1));
@@ -66,7 +93,7 @@ class Player extends SpriteComponent with CollisionCallbacks, HasGameRef<SpaceEs
         setMoveDirection(Vector2(1, 0));
         break;
       case JoystickDirection.idle:
-        setMoveDirection(Vector2.zero());
+      setMoveDirection(Vector2.zero());
         break;
       default:
         break;

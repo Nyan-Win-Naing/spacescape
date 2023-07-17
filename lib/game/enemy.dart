@@ -1,12 +1,16 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
+import 'package:flame/particles.dart';
+import 'package:flutter/material.dart';
 import 'package:space_escape/game/bullet.dart';
 import 'package:space_escape/game/game.dart';
 
-class Enemy extends SpriteComponent with CollisionCallbacks {
+class Enemy extends SpriteComponent
+    with CollisionCallbacks, HasGameRef<SpaceEscapeGame> {
   double _speed = 250;
 
   Enemy({
@@ -17,15 +21,38 @@ class Enemy extends SpriteComponent with CollisionCallbacks {
     angle = pi;
   }
 
+  Random _random = Random();
+
+  Vector2 getRandomVector() {
+    return (Vector2.random(_random) - Vector2.random(_random)) * 500;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
 
     position += Vector2(0, 1) * _speed * dt;
 
-    if(position.y > gameSize.y) {
+    if (position.y > gameSize.y) {
       removeFromParent();
     }
+
+    // final particleComponent = ParticleSystemComponent(
+    //   particle: Particle.generate(
+    //     count: 10,
+    //     lifespan: 0.1,
+    //     generator: (i) => AcceleratedParticle(
+    //       acceleration: getRandomVector(),
+    //       speed: getRandomVector(),
+    //       position: Vector2(size.x / 2, size.y / 2),
+    //       child: CircleParticle(
+    //         radius: 1,
+    //         paint: Paint()..color = Colors.white,
+    //       ),
+    //     ),
+    //   ),
+    // );
+    // add(particleComponent);
   }
 
   @override
@@ -39,8 +66,25 @@ class Enemy extends SpriteComponent with CollisionCallbacks {
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
 
-    if(other is Bullet) {
+    if (other is Bullet) {
       removeFromParent();
+
+      final particleComponent = ParticleSystemComponent(
+        particle: Particle.generate(
+          count: 10,
+          lifespan: 0.1,
+          generator: (i) => AcceleratedParticle(
+            acceleration: getRandomVector(),
+            speed: getRandomVector(),
+            position: position.clone(),
+            child: CircleParticle(
+              radius: 1.5,
+              paint: Paint()..color = Colors.white,
+            ),
+          ),
+        ),
+      );
+      gameRef.add(particleComponent);
     }
   }
 
@@ -52,7 +96,6 @@ class Enemy extends SpriteComponent with CollisionCallbacks {
   void render(Canvas canvas) {
     // TODO: implement render
     super.render(canvas);
-    renderDebugMode(canvas);
   }
 
   @override
