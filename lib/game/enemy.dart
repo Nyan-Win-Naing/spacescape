@@ -48,6 +48,12 @@ class Enemy extends SpriteComponent with CollisionCallbacks {
     removeFromParent();
   }
 
+  @override
+  void render(Canvas canvas) {
+    // TODO: implement render
+    super.render(canvas);
+    renderDebugMode(canvas);
+  }
 
   @override
   void onRemove() {
