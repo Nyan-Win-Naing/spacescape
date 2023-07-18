@@ -15,6 +15,9 @@ class Player extends SpriteComponent
 
   double _speed = 300;
 
+  int _score = 0;
+  int _health = 100;
+
   Random _random = Random();
 
   Vector2 getRandomVector() {
@@ -35,10 +38,19 @@ class Player extends SpriteComponent
     add(shape);
   }
 
+  int get score => _score;
+  int get health => _health;
+
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    if (other is Enemy) {}
+    if (other is Enemy) {
+      gameRef.camera.shake();
+      _health -= 10;
+      if(_health <= 0) {
+        _health = 0;
+      }
+    }
   }
 
   @override
@@ -102,5 +114,15 @@ class Player extends SpriteComponent
 
   void setMoveDirection(Vector2 newMoveDirection) {
     _moveDirection = newMoveDirection;
+  }
+
+  void addToScore(int points) {
+    _score += points;
+  }
+
+  void reset() {
+    _score = 0;
+    _health = 100;
+    position = gameRef.canvasSize / 2;
   }
 }

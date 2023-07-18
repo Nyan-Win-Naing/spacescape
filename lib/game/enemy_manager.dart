@@ -51,4 +51,9 @@ class EnemyManager extends Component with HasGameRef<SpaceEscapeGame> {
     super.update(dt);
     timer.update(dt);
   }
+
+  void reset() {
+    timer.stop();
+    timer.start();
+  }
 }

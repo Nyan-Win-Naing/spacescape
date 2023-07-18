@@ -7,7 +7,9 @@ import 'package:flame/extensions.dart';
 import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
 import 'package:space_escape/game/bullet.dart';
+import 'package:space_escape/game/command.dart';
 import 'package:space_escape/game/game.dart';
+import 'package:space_escape/game/player.dart';
 
 class Enemy extends SpriteComponent
     with CollisionCallbacks, HasGameRef<SpaceEscapeGame> {
@@ -66,8 +68,16 @@ class Enemy extends SpriteComponent
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
 
-    if (other is Bullet) {
+    if (other is Bullet || other is Player) {
       removeFromParent();
+
+      // gameRef.player.score += 1;
+      final command = Command<Player>(
+        action: (player) {
+          player.addToScore(1);
+        },
+      );
+      gameRef.addCommand(command);
 
       final particleComponent = ParticleSystemComponent(
         particle: Particle.generate(
@@ -94,7 +104,6 @@ class Enemy extends SpriteComponent
 
   @override
   void render(Canvas canvas) {
-    // TODO: implement render
     super.render(canvas);
   }
 
