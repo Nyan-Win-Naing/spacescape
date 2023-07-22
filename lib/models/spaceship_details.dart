@@ -15,8 +15,12 @@ class SpaceShip {
     required this.level,
   });
 
-  static Map<SpaceshipTypes, SpaceShip> spaceships = {
-    SpaceshipTypes.canary: Spaceship(
+  static SpaceShip getSpaceshipByType(SpaceshipType spaceShipType) {
+    return spaceships[spaceShipType] ?? spaceships.entries.first.value;
+  }
+
+  static Map<SpaceshipType, SpaceShip> spaceships = {
+    SpaceshipType.canary: SpaceShip(
       name: 'Canary',
       cost: 0,
       speed: 250,
@@ -24,7 +28,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_A.png',
       level: 1,
     ),
-    SpaceshipType.dusky: Spaceship(
+    SpaceshipType.dusky: SpaceShip(
       name: 'Dusky',
       cost: 100,
       speed: 400,
@@ -32,7 +36,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_B.png',
       level: 2,
     ),
-    SpaceshipType.condor: Spaceship(
+    SpaceshipType.condor: SpaceShip(
       name: 'Condor',
       cost: 200,
       speed: 300,
@@ -40,7 +44,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_C.png',
       level: 2,
     ),
-    SpaceshipType.cXC: Spaceship(
+    SpaceshipType.cXC: SpaceShip(
       name: 'CXC',
       cost: 400,
       speed: 300,
@@ -48,7 +52,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_D.png',
       level: 3,
     ),
-    SpaceshipType.raptor: Spaceship(
+    SpaceshipType.raptor: SpaceShip(
       name: 'Raptor',
       cost: 550,
       speed: 300,
@@ -56,7 +60,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_E.png',
       level: 3,
     ),
-    SpaceshipType.raptorX: Spaceship(
+    SpaceshipType.raptorX: SpaceShip(
       name: 'Raptor-X',
       cost: 700,
       speed: 350,
@@ -64,7 +68,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_F.png',
       level: 3,
     ),
-    SpaceshipType.albatross: Spaceship(
+    SpaceshipType.albatross: SpaceShip(
       name: 'Albatross',
       cost: 850,
       speed: 400,
@@ -72,7 +76,7 @@ class SpaceShip {
       assetPath: 'assets/images/ship_G.png',
       level: 4,
     ),
-    SpaceshipType.dK809: Spaceship(
+    SpaceshipType.dK809: SpaceShip(
       name: 'DK-809',
       cost: 1000,
       speed: 450,
@@ -83,13 +87,13 @@ class SpaceShip {
   };
 }
 
-enum SpaceshipTypes {
-  Canary,
-  Dusky,
-  Condor,
-  CXC,
-  Raptor,
-  RaptorX,
-  Albatross,
-  DK809,
+enum SpaceshipType {
+  canary,
+  dusky,
+  condor,
+  cXC,
+  raptor,
+  raptorX,
+  albatross,
+  dK809,
 }

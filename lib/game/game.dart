@@ -8,12 +8,15 @@ import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:space_escape/game/bullet.dart';
 import 'package:space_escape/game/command.dart';
 import 'package:space_escape/game/enemy.dart';
 import 'package:space_escape/game/enemy_manager.dart';
 import 'package:space_escape/game/player.dart';
 import 'package:space_escape/game/shoot_button.dart';
+import 'package:space_escape/models/player_data.dart';
+import 'package:space_escape/models/spaceship_details.dart';
 
 late Vector2 gameSize;
 
@@ -27,7 +30,7 @@ class SpaceEscapeGame extends FlameGame
   late ShootButton shootButton;
   final double _joystickRadius = 60;
   final double _deadZoneRadius = 10;
-  late SpriteSheet _spriteSheet;
+  late SpriteSheet spriteSheet;
   late EnemyManager _enemyManager;
   late JoystickComponent joystick;
   late TextComponent _playerScore;
@@ -46,7 +49,7 @@ class SpaceEscapeGame extends FlameGame
       final joyStickBackground = await images.load("joystick_background.png");
       final joyStickKnob = await images.load("joystick_knob.png");
       final shootSprite = await images.load("shoot.png");
-      _spriteSheet = SpriteSheet.fromColumnsAndRows(
+      spriteSheet = SpriteSheet.fromColumnsAndRows(
         image: images.fromCache("game_tilesheet.png"),
         columns: 8,
         rows: 6,
@@ -69,9 +72,14 @@ class SpaceEscapeGame extends FlameGame
       );
       add(joystick);
 
+
+      final spaceShipType = SpaceshipType.albatross;
+      final spaceShip = SpaceShip.getSpaceshipByType(spaceShipType);
+
       _player = Player(
+        spaceshipType: spaceShipType,
         joystick: joystick,
-        sprite: _spriteSheet.getSpriteById(4),
+        sprite: spriteSheet.getSpriteById(spaceShip.spriteId),
         size: Vector2(64, 64),
         position: canvasSize / 2,
       );
@@ -81,7 +89,7 @@ class SpaceEscapeGame extends FlameGame
 
       shootButton = ShootButton(
         player: _player,
-        spriteSheet: _spriteSheet,
+        spriteSheet: spriteSheet,
         sprite: Sprite(
           shootSprite,
         ),
@@ -91,7 +99,7 @@ class SpaceEscapeGame extends FlameGame
       shootButton.anchor = Anchor.center;
       add(shootButton);
 
-      _enemyManager = EnemyManager(spriteSheet: _spriteSheet, screenSize: size);
+      _enemyManager = EnemyManager(spriteSheet: spriteSheet, screenSize: size);
       add(_enemyManager);
 
       _playerScore = TextComponent(
@@ -130,6 +138,15 @@ class SpaceEscapeGame extends FlameGame
     }
 
     return super.onLoad();
+  }
+
+  @override
+  void onAttach() {
+    if(buildContext != null) {
+      final playerData = Provider.of<PlayerData>(buildContext!, listen: false);
+      _player.setSpaceshipType(playerData.spaceshipType);
+    }
+    super.onAttach();
   }
 
   @override

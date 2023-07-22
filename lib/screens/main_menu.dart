@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:space_escape/screens/game_play.dart';
+import 'package:space_escape/screens/select_spaceship.dart';
 
 class MainMenu extends StatelessWidget {
   const MainMenu({Key? key}) : super(key: key);
@@ -37,7 +38,7 @@ class MainMenu extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => GamePlay(),
+                      builder: (context) => SelectSpaceship(),
                     ),
                   );
                 },

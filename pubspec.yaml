@@ -38,6 +38,7 @@ dependencies:
   flame: ^1.8.1
   google_fonts: ^5.1.0
   provider: ^6.0.5
+  flutter_carousel_slider: ^1.1.0
 
 dev_dependencies:
   flutter_test:

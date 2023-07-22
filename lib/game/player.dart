@@ -7,29 +7,32 @@ import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
 import 'package:space_escape/game/enemy.dart';
 import 'package:space_escape/game/game.dart';
+import 'package:space_escape/models/spaceship_details.dart';
 
 class Player extends SpriteComponent
     with CollisionCallbacks, HasGameRef<SpaceEscapeGame> {
   Vector2 _moveDirection = Vector2.zero();
   final JoystickComponent joystick;
 
-  double _speed = 300;
-
   int _score = 0;
   int _health = 100;
 
   Random _random = Random();
+
+  SpaceshipType spaceshipType;
+  SpaceShip _spaceShip;
 
   Vector2 getRandomVector() {
     return (Vector2.random(_random) - Vector2(0.5, -1)) * 200;
   }
 
   Player({
+    required this.spaceshipType,
     required this.joystick,
     Sprite? sprite,
     Vector2? position,
     Vector2? size,
-  }) : super(sprite: sprite, position: position, size: size);
+  }) : _spaceShip = SpaceShip.getSpaceshipByType(spaceshipType), super(sprite: sprite, position: position, size: size);
 
   @override
   void onMount() {
@@ -56,7 +59,7 @@ class Player extends SpriteComponent
   @override
   void update(double dt) {
     super.update(dt);
-    position += _moveDirection.normalized() * _speed * dt;
+    position += _moveDirection.normalized() * _spaceShip.speed * dt;
     position.clamp(Vector2.zero() + size / 2, gameSize - size / 2);
 
     print("Joystick direction is ====> ${joystick.direction}");
@@ -124,5 +127,11 @@ class Player extends SpriteComponent
     _score = 0;
     _health = 100;
     position = gameRef.canvasSize / 2;
+  }
+
+  void setSpaceshipType(SpaceshipType spaceshipType) {
+    this.spaceshipType = spaceshipType;
+    _spaceShip = SpaceShip.getSpaceshipByType(spaceshipType);
+    sprite = gameRef.spriteSheet.getSpriteById(_spaceShip.spriteId);
   }
 }
