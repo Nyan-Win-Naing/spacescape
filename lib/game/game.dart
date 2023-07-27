@@ -14,9 +14,14 @@ import 'package:space_escape/game/command.dart';
 import 'package:space_escape/game/enemy.dart';
 import 'package:space_escape/game/enemy_manager.dart';
 import 'package:space_escape/game/player.dart';
+import 'package:space_escape/game/power_up_manager.dart';
+import 'package:space_escape/game/power_ups.dart';
 import 'package:space_escape/game/shoot_button.dart';
 import 'package:space_escape/models/player_data.dart';
 import 'package:space_escape/models/spaceship_details.dart';
+import 'package:space_escape/widget/overlays/game_over_menu.dart';
+import 'package:space_escape/widget/overlays/pause_button.dart';
+import 'package:space_escape/widget/overlays/pause_menu.dart';
 
 late Vector2 gameSize;
 
@@ -35,6 +40,7 @@ class SpaceEscapeGame extends FlameGame
   late JoystickComponent joystick;
   late TextComponent _playerScore;
   late TextComponent _playerHealth;
+  late PowerUpManager _powerUpManager;
   final _commandList = List<Command>.empty(growable: true);
   final _addLaterCommandList = List<Command>.empty(growable: true);
 
@@ -43,9 +49,15 @@ class SpaceEscapeGame extends FlameGame
   @override
   Future<void> onLoad() async {
     print("Canvas size is ====> $canvasSize");
-    if(!_isAlreadyLoaded) {
+    if (!_isAlreadyLoaded) {
       gameSize = size;
-      await images.load("game_tilesheet.png");
+      await images.loadAll([
+        "game_tilesheet.png",
+        "freeze.png",
+        "icon_plus_small.png",
+        "multi_fire.png",
+        "nuke.png",
+      ]);
       final joyStickBackground = await images.load("joystick_background.png");
       final joyStickKnob = await images.load("joystick_knob.png");
       final shootSprite = await images.load("shoot.png");
@@ -72,7 +84,6 @@ class SpaceEscapeGame extends FlameGame
       );
       add(joystick);
 
-
       final spaceShipType = SpaceshipType.albatross;
       final spaceShip = SpaceShip.getSpaceshipByType(spaceShipType);
 
@@ -85,7 +96,6 @@ class SpaceEscapeGame extends FlameGame
       );
       _player.anchor = Anchor.center;
       add(_player);
-
 
       shootButton = ShootButton(
         player: _player,
@@ -102,16 +112,17 @@ class SpaceEscapeGame extends FlameGame
       _enemyManager = EnemyManager(spriteSheet: spriteSheet, screenSize: size);
       add(_enemyManager);
 
+      _powerUpManager = PowerUpManager(screenSize: size);
+      add(_powerUpManager);
+
       _playerScore = TextComponent(
           text: "Score: 0",
           position: Vector2(20, 20),
           textRenderer: TextPaint(
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )
-          )
-      );
+            color: Colors.white,
+            fontSize: 16,
+          )));
       add(_playerScore);
 
       _playerHealth = TextComponent(
@@ -119,11 +130,9 @@ class SpaceEscapeGame extends FlameGame
           position: Vector2(size.x - 20, 20),
           textRenderer: TextPaint(
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )
-          )
-      );
+            color: Colors.white,
+            fontSize: 16,
+          )));
       _playerHealth.anchor = Anchor.topRight;
       add(_playerHealth);
 
@@ -142,7 +151,7 @@ class SpaceEscapeGame extends FlameGame
 
   @override
   void onAttach() {
-    if(buildContext != null) {
+    if (buildContext != null) {
       final playerData = Provider.of<PlayerData>(buildContext!, listen: false);
       _player.setSpaceshipType(playerData.spaceshipType);
     }
@@ -201,6 +210,12 @@ class SpaceEscapeGame extends FlameGame
 
     _playerScore.text = "Score: ${_player.score}";
     _playerHealth.text = "Health: ${_player.health}%";
+
+    if (_player.health <= 0 && (!camera.shaking)) {
+      pauseEngine();
+      overlays.remove(PauseButton.id);
+      overlays.add(GameOverMenu.id);
+    }
   }
 
   void addCommand(Command command) {
@@ -257,10 +272,10 @@ class SpaceEscapeGame extends FlameGame
     super.add(component);
   }
 
-
   void reset() {
     _player.reset();
     _enemyManager.reset();
+    _powerUpManager.reset();
 
     children.whereType<Enemy>().forEach((enemy) {
       enemy.removeFromParent();
@@ -269,6 +284,28 @@ class SpaceEscapeGame extends FlameGame
     children.whereType<Bullet>().forEach((bullet) {
       bullet.removeFromParent();
     });
+
+    children.whereType<PowerUp>().forEach((powerUp) {
+      powerUp.removeFromParent();
+    });
+  }
+
+  @override
+  void lifecycleStateChange(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        if (_player.health > 0) {
+          pauseEngine();
+          overlays.remove(PauseButton.id);
+          overlays.add(PauseMenu.id);
+        }
+        break;
+    }
+    super.lifecycleStateChange(state);
   }
 
   // @override

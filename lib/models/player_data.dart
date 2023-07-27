@@ -26,7 +26,7 @@ class PlayerData extends ChangeNotifier {
     "currentSpaceshipType": SpaceshipType.canary,
     "ownedSpaceshipTypes": [],
     "highScore": 0,
-    "money": 500,
+    "money": 0,
   };
 
   bool isOwned(SpaceshipType spaceshipType) {

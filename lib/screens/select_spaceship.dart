@@ -35,6 +35,23 @@ class SelectSpaceship extends StatelessWidget {
                 ),
               ),
             ),
+            Consumer<PlayerData>(
+              builder: (context, playerData, child) {
+                final spaceship =
+                    SpaceShip.getSpaceshipByType(playerData.spaceshipType);
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      "Ship: ${spaceship.name}",
+                    ),
+                    Text(
+                      "Money: ${playerData.money}",
+                    ),
+                  ],
+                );
+              },
+            ),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.5,
               child: CarouselSlider.builder(

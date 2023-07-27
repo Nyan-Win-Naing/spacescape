@@ -5,8 +5,10 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:space_escape/game/enemy.dart';
 import 'package:space_escape/game/game.dart';
+import 'package:space_escape/models/player_data.dart';
 import 'package:space_escape/models/spaceship_details.dart';
 
 class Player extends SpriteComponent
@@ -22,6 +24,11 @@ class Player extends SpriteComponent
   SpaceshipType spaceshipType;
   SpaceShip _spaceShip;
 
+  late PlayerData _playerData;
+  late Timer _powerUpTimer;
+
+  bool shootMultipleBullet = false;
+
   Vector2 getRandomVector() {
     return (Vector2.random(_random) - Vector2(0.5, -1)) * 200;
   }
@@ -32,13 +39,23 @@ class Player extends SpriteComponent
     Sprite? sprite,
     Vector2? position,
     Vector2? size,
-  }) : _spaceShip = SpaceShip.getSpaceshipByType(spaceshipType), super(sprite: sprite, position: position, size: size);
+  })  : _spaceShip = SpaceShip.getSpaceshipByType(spaceshipType),
+        super(sprite: sprite, position: position, size: size) {
+    _powerUpTimer = Timer(
+      4,
+      onTick: () {
+        shootMultipleBullet = false;
+      }
+    );
+  }
 
   @override
   void onMount() {
     super.onMount();
     final shape = CircleHitbox();
     add(shape);
+
+    _playerData = Provider.of<PlayerData>(gameRef.buildContext!, listen: false);
   }
 
   int get score => _score;
@@ -50,7 +67,7 @@ class Player extends SpriteComponent
     if (other is Enemy) {
       gameRef.camera.shake();
       _health -= 10;
-      if(_health <= 0) {
+      if (_health <= 0) {
         _health = 0;
       }
     }
@@ -108,11 +125,13 @@ class Player extends SpriteComponent
         setMoveDirection(Vector2(1, 0));
         break;
       case JoystickDirection.idle:
-      setMoveDirection(Vector2.zero());
+        setMoveDirection(Vector2.zero());
         break;
       default:
         break;
     }
+
+    _powerUpTimer.update(dt);
   }
 
   void setMoveDirection(Vector2 newMoveDirection) {
@@ -121,6 +140,7 @@ class Player extends SpriteComponent
 
   void addToScore(int points) {
     _score += points;
+    _playerData.money += points;
   }
 
   void reset() {
@@ -133,5 +153,18 @@ class Player extends SpriteComponent
     this.spaceshipType = spaceshipType;
     _spaceShip = SpaceShip.getSpaceshipByType(spaceshipType);
     sprite = gameRef.spriteSheet.getSpriteById(_spaceShip.spriteId);
+  }
+
+  void increaseHealthBy(int points) {
+    _health += points;
+    if (_health > 100) {
+      _health = 100;
+    }
+  }
+
+  void shootMultipleBullets() {
+    shootMultipleBullet = true;
+    _powerUpTimer.stop();
+    _powerUpTimer.start();
   }
 }

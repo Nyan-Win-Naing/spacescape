@@ -15,12 +15,20 @@ class Enemy extends SpriteComponent
     with CollisionCallbacks, HasGameRef<SpaceEscapeGame> {
   double _speed = 250;
 
+  late Timer _freezeTimer;
+
   Enemy({
     Sprite? sprite,
     Vector2? position,
     Vector2? size,
   }) : super(sprite: sprite, position: position, size: size) {
     angle = pi;
+    _freezeTimer = Timer(
+      2,
+      onTick: () {
+        _speed = 250;
+      },
+    );
   }
 
   Random _random = Random();
@@ -38,6 +46,8 @@ class Enemy extends SpriteComponent
     if (position.y > gameSize.y) {
       removeFromParent();
     }
+
+    _freezeTimer.update(dt);
 
     // final particleComponent = ParticleSystemComponent(
     //   particle: Particle.generate(
@@ -62,6 +72,26 @@ class Enemy extends SpriteComponent
     super.onMount();
     final shape = CircleHitbox();
     add(shape);
+  }
+
+  void destroy() {
+    final particleComponent = ParticleSystemComponent(
+      particle: Particle.generate(
+        count: 10,
+        lifespan: 0.1,
+        generator: (i) => AcceleratedParticle(
+          acceleration: getRandomVector(),
+          speed: getRandomVector(),
+          position: position.clone(),
+          child: CircleParticle(
+            radius: 1.5,
+            paint: Paint()..color = Colors.white,
+          ),
+        ),
+      ),
+    );
+    gameRef.add(particleComponent);
+    removeFromParent();
   }
 
   @override
@@ -111,5 +141,11 @@ class Enemy extends SpriteComponent
   void onRemove() {
     super.onRemove();
     print("Removing ${this.toString()}");
+  }
+
+  void freeze() {
+    _speed = 0;
+    _freezeTimer.stop();
+    _freezeTimer.start();
   }
 }
